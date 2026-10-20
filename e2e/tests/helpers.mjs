@@ -2,6 +2,11 @@ import { expect } from "@playwright/test";
 
 // 起動（WebAssembly の読み込み・MCP の初期化）と、見出しの打ち込みが終わるまで待つ。
 export async function boot(page, { path = "/" } = {}) {
+  // 原因を CI の記録から追えるよう、ブラウザのエラーと警告を試験の出力に出す
+  const tag = `[${page.context().browser()?.browserType().name()}]`;
+  page.on("console", (m) => { if (m.type() === "error" || m.type() === "warning") console.log(`${tag} console.${m.type()}: ${m.text()}`); });
+  page.on("pageerror", (e) => console.log(`${tag} pageerror: ${e.message}`));
+  page.on("requestfailed", (r) => console.log(`${tag} requestfailed: ${r.url()} ${r.failure()?.errorText}`));
   await page.goto(path);
   await page.waitForSelector("html.booted", { timeout: 30_000 });
   await page.waitForSelector("html[data-mcp=ready]", { timeout: 30_000 });

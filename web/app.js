@@ -9,6 +9,18 @@
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const finePointer = matchMedia("(pointer: fine)").matches;
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  // 時間で進む動き。requestAnimationFrame は描画の間引き（見えない画面・負荷の高い画面）で止まることがあるため、
+  // タイマーで回し、進み具合は経過時間で決める。どんなに間引かれても duration を過ぎれば必ず最後の形で終わる。
+  const animate = (duration, frame) => new Promise((resolve) => {
+    const t0 = performance.now();
+    const tick = () => {
+      const p = Math.min(1, (performance.now() - t0) / duration);
+      frame(p);
+      if (p < 1) setTimeout(tick, 16);
+      else resolve();
+    };
+    tick();
+  });
 
   // ── 文字の色（琥珀・緑）。この閲覧者の好みだけを覚える ──
   const toggle = $("#phosphor-toggle");
@@ -97,6 +109,7 @@
   }
 
   let tools = [];
+  let busy = false; // 遊び場で実行している間、モニターの自動の呼び出しを休む
   const handshake = [];
   let examples = [];
   let current = null;
@@ -215,7 +228,7 @@
     for (const h of handshake) await push(h[0], h[1]);
     let i = 0;
     for (;;) {
-      if (!visible || document.hidden) { await sleep(600); continue; }
+      if (!visible || document.hidden || busy) { await sleep(600); continue; }
       const ex = examples[i++ % examples.length];
       const r = await rpc("tools/call", { name: ex.tool, arguments: ex.args });
       rtt.textContent = `${r.ms.toFixed(1)} ms`;
@@ -336,18 +349,11 @@
     log.appendChild(e);
     const done = () => { pre.innerHTML = highlight(text); e.dataset.done = "1"; log.scrollTop = log.scrollHeight; };
     if (instant || reduced) { done(); return Promise.resolve(); }
-    return new Promise((resolve) => {
-      const per = Math.max(24, Math.ceil(text.length / 36));
-      let i = 0;
-      const step = () => {
-        i += per;
-        if (i >= text.length) { done(); resolve(); return; }
-        pre.textContent = text.slice(0, i);
-        log.scrollTop = log.scrollHeight;
-        requestAnimationFrame(step);
-      };
-      requestAnimationFrame(step);
-    });
+    // 長さに応じて 0.25〜0.6 秒で打ち終える
+    return animate(Math.min(600, 250 + text.length / 4), (p) => {
+      pre.textContent = text.slice(0, Math.floor(text.length * p));
+      log.scrollTop = log.scrollHeight;
+    }).then(done);
   }
 
   async function run() {
@@ -364,6 +370,16 @@
     ta.classList.remove("invalid");
     const btn = $("#run");
     btn.disabled = true;
+    busy = true;
+    try {
+      await runCall(args);
+    } finally {
+      busy = false;
+      btn.disabled = false;
+    }
+  }
+
+  async function runCall(args) {
     const r = await rpc("tools/call", { name: current.name, arguments: args });
     await logEntry("out", r.msg, 0);
     await logEntry("in", r.reply, r.ms);
@@ -372,7 +388,6 @@
     else if (res.isError) showSummary(res.content.map((c) => c.text).join(" "), true);
     else showSummary(summarize(res.structuredContent));
     setStatus(`往復 ${r.ms.toFixed(1)} ms · ブラウザ内の MCP サーバー`);
-    btn.disabled = false;
     $("#play").dataset.lastId = String(r.msg.id);
   }
 
@@ -490,15 +505,7 @@
   function countUp(el) {
     const to = Number(el.dataset.to);
     if (reduced) { el.textContent = to.toLocaleString("ja-JP"); return; }
-    const t0 = performance.now();
-    const dur = 1400;
-    const tick = (t) => {
-      const p = Math.min(1, (t - t0) / dur);
-      const e = 1 - Math.pow(1 - p, 4);
-      el.textContent = Math.round(to * e).toLocaleString("ja-JP");
-      if (p < 1) requestAnimationFrame(tick);
-    };
-    requestAnimationFrame(tick);
+    animate(1400, (p) => { el.textContent = Math.round(to * (1 - Math.pow(1 - p, 4))).toLocaleString("ja-JP"); });
   }
   renderStats();
 

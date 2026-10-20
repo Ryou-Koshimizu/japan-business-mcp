@@ -138,18 +138,19 @@ GitHub Pages（`.github/workflows/pages.yml` を手動で実行）か、`make we
 | 住所の正規化：鳥取県の全法人の所在地（冪等・全角が残らない・数字の並びが変わらない） | 20,258件 | 0 |
 | 和暦⇔西暦の往復：1873〜2150年を7日おき | 14,506件 | 0 |
 
-1回の実機試験で、道具の呼び出しは通り道ごとに 71,360 回（stdio 88秒・HTTP 28秒、Apple Silicon の Mac で測定）。
+1回の実機試験で、道具の呼び出しは通り道ごとに 71,360 回（stdio 84秒・HTTP 24秒、Apple Silicon の Mac で測定）。
 
 ### 全件試験（`bash scripts/check-all.sh`）
 
 | 種類 | 結果 |
 | --- | --- |
-| Go の試験（表駆動・ゴールデン・ファズの種・MCP 結合（実行ファイルを stdio と HTTP で）・`-race`） | 273件 合格・飛ばし 0 |
+| Go の試験（表駆動・ゴールデン・ファズの種・MCP 結合（実行ファイルを stdio と HTTP で）・`-race`） | 276件 合格・飛ばし 0 |
 | ファズ（検査用数字・正規化の冪等性・和暦・支払期日・月の計算・会社カレンダー） | 7種類 × 30秒、失敗 0 |
-| 実ブラウザ（Playwright：Chromium と WebKit） | 72件 合格・飛ばし 0 |
+| 実ブラウザ（Playwright：Chromium と WebKit） | 74件 合格・飛ばし 0 |
 | └ 画面の大きさ 25種類（280×653〜3840×2160、横向きのスマホを含む）× 2 | 横はみ出し 0・ヘッダー 80px・ヒーローの中身は最初の画面に収まる |
 | └ 全24例を画面から実行し、返事が Go の試験と同じ正解（ゴールデン）と一致 | 誤答 0 |
 | └ axe（WCAG 2.1 A/AA、琥珀・緑 × パソコン・スマホ） | 違反 0 |
+| └ 描画の間引きで requestAnimationFrame が来ない状態でも返事が最後まで出る（Linux の WebKit で見つけた不具合の回帰試験） | 合格 |
 | 静的解析 | `go vet`・staticcheck 2026.2.2・golangci-lint 2.15.0 で 0件 |
 
 祝日の規則は、内閣府の CSV（取得したままの Shift_JIS、SHA-256 を記録）と1日ずつ突き合わせる試験を、ふだんの `go test` にも入れています（[internal/holiday/testdata/SOURCE.md](internal/holiday/testdata/SOURCE.md)）。

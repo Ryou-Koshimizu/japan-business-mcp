@@ -119,3 +119,19 @@ test("動きを減らす設定では、起動の画面と打ち込みを出さ�
   await expect(page.locator("#boot")).toBeHidden();
   await ctx.close();
 });
+
+// Linux の WebKit（CI）では、モニターが動いている間 requestAnimationFrame が来ず、返事の表示が途中で止まった。
+// rAF を止めた状態でも、返事が最後まで表示され、要約が出ることを確かめる（回帰試験）。
+test("描画の間引きで requestAnimationFrame が来なくても、返事は最後まで出る", async ({ page }) => {
+  await page.addInitScript(() => { window.requestAnimationFrame = () => 0; });
+  await boot(page);
+  const n = await page.locator("#log .entry.in[data-done]").count();
+  await page.locator('.tool-btn[data-tool="wareki_convert"]').click();
+  await page.locator('.chip[data-example="wareki_reiwa_kanji"]').click();
+  await page.locator("#run").click();
+  await expect(page.locator("#log .entry.in[data-done]")).toHaveCount(n + 1);
+  await expect(page.locator("#summary")).toHaveText("令和8年10月20日 = 2026年10月20日");
+  await page.locator("#args").fill('{"input": "平成31年5月1日"}');
+  await page.locator("#run").click();
+  await expect(page.locator("#summary")).toHaveClass(/err/);
+});

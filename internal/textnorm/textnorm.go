@@ -60,31 +60,41 @@ func Normalize(s string, o Options) Result {
 		s = strings.ToValidUTF8(s, "�")
 		res.Applied = append(res.Applied, "壊れた文字を置き換え")
 	}
+	applied := map[string]bool{}
 	step := func(label string, f func(string) string) {
 		n := f(s)
 		if n != s {
-			res.Applied = append(res.Applied, label)
+			if !applied[label] {
+				applied[label] = true
+				res.Applied = append(res.Applied, label)
+			}
 			s = n
 		}
 	}
-	step("全角英数字を半角・半角カナを全角に（NFKC）", norm.NFKC.String)
-	step("数字の間の長音・ダッシュをハイフンに", unifyHyphens)
-	switch o.Kana {
-	case Katakana:
-		step("ひらがなをカタカナに", toKatakana)
-	case Hiragana:
-		step("カタカナをひらがなに", toHiragana)
+	// 規則どうしが影響し合う（空白を詰めると「0ー0」が新しくできる など）ので、
+	// 1回かけて変わらなくなるまで、すべての規則をくり返す（冪等にするため。数回で止まる）。
+	for i := 0; i < 8; i++ {
+		before := s
+		step("全角英数字を半角・半角カナを全角に（NFKC）", norm.NFKC.String)
+		step("数字の間の長音・ダッシュをハイフンに", unifyHyphens)
+		switch o.Kana {
+		case Katakana:
+			step("ひらがなをカタカナに", toKatakana)
+		case Hiragana:
+			step("カタカナをひらがなに", toHiragana)
+		}
+		if o.Mode == Address {
+			step("住所の空白を詰める", squeezeAddressSpaces)
+			step("漢数字の丁目・番地・号を算用数字に", addressKanjiNumbers)
+			step("丁目・番地・号をハイフンに", addressHyphens)
+			step("郵便番号を 〒123-4567 の形に", postalCode)
+		} else {
+			step("空白をまとめる", collapseSpaces)
+		}
+		if s == before {
+			break
+		}
 	}
-	if o.Mode == Address {
-		step("住所の空白を詰める", squeezeAddressSpaces)
-		step("漢数字の丁目・番地・号を算用数字に", addressKanjiNumbers)
-		step("丁目・番地・号をハイフンに", addressHyphens)
-		step("郵便番号を 〒123-4567 の形に", postalCode)
-	} else {
-		step("空白をまとめる", collapseSpaces)
-	}
-	// 途中の置き換えで結合文字が隣り合うことがあるので、最後にもう一度 NFKC をかける。
-	step("最後の NFKC", norm.NFKC.String)
 	res.Output = s
 	res.Changed = res.Input != res.Output
 	return res

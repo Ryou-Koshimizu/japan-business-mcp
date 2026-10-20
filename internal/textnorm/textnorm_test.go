@@ -37,6 +37,7 @@ func TestNormalizeTable(t *testing.T) {
 		{"番地のあとに括弧", "上道町３０００番地（境港市役所内）", Options{Mode: Address}, "上道町3000(境港市役所内)"},
 		{"番地のあとに英字の部屋番号", "倉吉市昭和町２丁目１１７番地Ａ－２２", Options{Mode: Address}, "倉吉市昭和町2-117 A-22"},
 		{"号のあとに部屋番号", "米子市皆生温泉２丁目８番２号１０２号", Options{Mode: Address}, "米子市皆生温泉2-8-2 102"},
+		{"空白を詰めてできた数字の間の長音", "0ー 0000000", Options{Mode: Address}, "0-0000000"},
 		{"番館は変えない", "本町５番館", Options{Mode: Address}, "本町5番館"},
 	}
 	for _, c := range cases {

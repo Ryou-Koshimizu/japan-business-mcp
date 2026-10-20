@@ -1,0 +1,4 @@
+go test fuzz v1
+string("\xef\xbc0ー 0000000")
+bool(true)
+uint8(0)
