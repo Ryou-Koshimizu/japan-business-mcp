@@ -1,0 +1,47 @@
+{
+  "format_errors": 1,
+  "invalid": 1,
+  "results": [
+    {
+      "check_digit": 7,
+      "corporate_number": "7000012050002",
+      "expected_check_digit": 7,
+      "input": "T7000012050002",
+      "kind": "registration_number",
+      "message": "登録番号（T＋13桁） の検査用数字（先頭の 7）は正しい値です",
+      "normalized": "T7000012050002",
+      "valid": true
+    },
+    {
+      "check_digit": 7,
+      "expected_check_digit": 7,
+      "input": "７０００－０１２０－５０００２",
+      "kind": "corporate_number",
+      "message": "法人番号 の検査用数字（先頭の 7）は正しい値です",
+      "normalized": "7000012050002",
+      "valid": true
+    },
+    {
+      "check_digit": 7,
+      "corporate_number": "7000012050003",
+      "expected_check_digit": 6,
+      "input": "T7000012050003",
+      "kind": "registration_number",
+      "message": "登録番号（T＋13桁） の検査用数字が合いません（先頭が 7、計算上は 6）。写し間違いの可能性があります",
+      "normalized": "T7000012050003",
+      "valid": false
+    },
+    {
+      "check_digit": 0,
+      "expected_check_digit": 0,
+      "format_error": "登録番号（T＋13桁） は数字13桁です（\"T12345\" は 5 文字）",
+      "input": "T12345",
+      "kind": "registration_number",
+      "message": "登録番号（T＋13桁） は数字13桁です（\"T12345\" は 5 文字）",
+      "normalized": "T12345",
+      "valid": false
+    }
+  ],
+  "summary": "4件中 正しい 2件・検査用数字の不一致 1件・形式の誤り 1件（実在と登録の有無は国税庁の公表サイトで確認できます）",
+  "valid": 2
+}

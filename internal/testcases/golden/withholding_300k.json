@@ -1,0 +1,11 @@
+{
+  "amount": 300000,
+  "category": "general",
+  "category_label": "報酬・料金（原稿料・デザイン料・講演料・士業の報酬など）",
+  "consumption_tax": 30000,
+  "formula": "300000円 × 10.21% = 30630円（1円未満切り捨て）",
+  "includes_reconstruction_tax": true,
+  "net_payment": 299370,
+  "summary": "報酬 300,000円 の源泉徴収税額は 30,630円、支払額は 299,370円",
+  "withholding_tax": 30630
+}

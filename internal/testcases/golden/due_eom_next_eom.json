@@ -1,0 +1,12 @@
+{
+  "adjust_reason": "2026-02-28（土）が土曜日のため前営業日に寄せました",
+  "adjusted": true,
+  "closing_date": "2026-01-31",
+  "days_from_transaction": 43,
+  "pay_date": "2026-02-27",
+  "pay_weekday": "金",
+  "scheduled_pay_date": "2026-02-28",
+  "summary": "月末締め翌月末払い：2026-01-15 の取引は 2026-01-31 締め、支払日は 2026-02-27（金）。2026-02-28（土）が土曜日のため前営業日に寄せました",
+  "terms_label": "月末締め翌月末払い",
+  "transaction_date": "2026-01-15"
+}

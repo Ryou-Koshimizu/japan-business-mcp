@@ -1,0 +1,33 @@
+version: "2"
+run:
+  timeout: 5m
+linters:
+  default: standard
+  enable:
+    - bodyclose
+    - errorlint
+    - gocritic
+    - gosec
+    - misspell
+    - nilerr
+    - noctx
+    - revive
+    - unconvert
+    - unparam
+    - usestdlibvars
+  settings:
+    revive:
+      rules:
+        - name: exported
+          disabled: true
+        - name: package-comments
+    gosec:
+      excludes:
+        - G204 # 試験で自分が作った実行ファイルを起動する
+  exclusions:
+    presets:
+      - std-error-handling
+formatters:
+  enable:
+    - gofmt
+    - goimports

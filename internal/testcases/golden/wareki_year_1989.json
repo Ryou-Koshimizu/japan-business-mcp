@@ -1,0 +1,27 @@
+{
+  "results": [
+    {
+      "date": "0001-01-01",
+      "era": "昭和",
+      "era_year": 64,
+      "gregorian": "1989年",
+      "input": "1989",
+      "note": "1989年は改元の年です（昭和は1月7日まで、平成は1月8日から）",
+      "wareki": "昭和64年",
+      "wareki_alphabet": "S64",
+      "year_only": true
+    },
+    {
+      "date": "0001-01-01",
+      "era": "平成",
+      "era_year": 1,
+      "gregorian": "1989年",
+      "input": "1989",
+      "note": "1989年は改元の年です（昭和は1月7日まで、平成は1月8日から）",
+      "wareki": "平成元年",
+      "wareki_alphabet": "H1",
+      "year_only": true
+    }
+  ],
+  "summary": "昭和64年 = 1989年／平成元年 = 1989年"
+}

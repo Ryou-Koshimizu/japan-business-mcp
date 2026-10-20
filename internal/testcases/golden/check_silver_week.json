@@ -1,0 +1,14 @@
+{
+  "date": "2026-09-22",
+  "holiday": {
+    "date": "2026-09-22",
+    "kind": "citizens",
+    "name": "国民の休日"
+  },
+  "is_business_day": false,
+  "next_business_day": "2026-09-24",
+  "previous_business_day": "2026-09-18",
+  "reason": "国民の休日",
+  "summary": "2026-09-22（火）は休み：国民の休日。次の営業日は 2026-09-24",
+  "weekday": "火"
+}

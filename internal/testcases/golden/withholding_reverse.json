@@ -1,0 +1,17 @@
+{
+  "amount": 111370,
+  "category": "general",
+  "category_label": "報酬・料金（原稿料・デザイン料・講演料・士業の報酬など）",
+  "consumption_tax": 0,
+  "formula": "111370円 × 10.21% = 11370円（1円未満切り捨て）",
+  "includes_reconstruction_tax": true,
+  "net_payment": 100000,
+  "reverse": {
+    "exact": true,
+    "gross": 111370,
+    "net_target": 100000,
+    "note": "報酬額 111,370円 で手取りがちょうど 100,000円 になります"
+  },
+  "summary": "報酬 111,370円 の源泉徴収税額は 11,370円、支払額は 100,000円",
+  "withholding_tax": 11370
+}

@@ -1,0 +1,16 @@
+{
+  "business_days": 21,
+  "calendar_days": 31,
+  "company_days_off": 0,
+  "from": "2026-10-01",
+  "holidays_in_range": [
+    {
+      "date": "2026-10-12",
+      "kind": "national",
+      "name": "スポーツの日"
+    }
+  ],
+  "summary": "2026-10-01〜2026-10-31 の 31日間のうち、営業日は 21日",
+  "to": "2026-10-31",
+  "weekend_days": 9
+}

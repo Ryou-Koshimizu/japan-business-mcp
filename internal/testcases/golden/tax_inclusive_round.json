@@ -1,0 +1,24 @@
+{
+  "by_rate": [
+    {
+      "amount_excluding_tax": 908,
+      "amount_including_tax": 999,
+      "lines": 1,
+      "rate": 10,
+      "rate_label": "標準税率 10%",
+      "subtotal_as_entered": 999,
+      "tax": 91,
+      "tax_if_rounded_per_line": 91
+    }
+  ],
+  "explanation": "税率ごとに税込の金額を合計し、税額の端数処理（四捨五入）を1回だけ行いました。",
+  "mode": "inclusive",
+  "per_line_rounding_differs": false,
+  "rounding": "round",
+  "rounding_label": "四捨五入",
+  "summary": "税込合計 999円・消費税 91円：10%対象 908円（税 91円）",
+  "total_excluding_tax": 908,
+  "total_including_tax": 999,
+  "total_tax": 91,
+  "total_tax_if_rounded_per_line": 91
+}

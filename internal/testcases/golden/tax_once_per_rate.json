@@ -1,0 +1,34 @@
+{
+  "by_rate": [
+    {
+      "amount_excluding_tax": 210,
+      "amount_including_tax": 231,
+      "lines": 2,
+      "rate": 10,
+      "rate_label": "標準税率 10%",
+      "subtotal_as_entered": 210,
+      "tax": 21,
+      "tax_if_rounded_per_line": 20
+    },
+    {
+      "amount_excluding_tax": 390,
+      "amount_including_tax": 421,
+      "lines": 1,
+      "rate": 8,
+      "rate_label": "軽減税率 8%",
+      "subtotal_as_entered": 390,
+      "tax": 31,
+      "tax_if_rounded_per_line": 31
+    }
+  ],
+  "explanation": "税率ごとに税抜の金額を合計し、税額の端数処理（切り捨て）を1回だけ行いました。品目ごとに端数処理して足すと税額は 51円 で、1円少なくなります（適格請求書では税率ごとに1回の端数処理）。",
+  "mode": "exclusive",
+  "per_line_rounding_differs": true,
+  "rounding": "floor",
+  "rounding_label": "切り捨て",
+  "summary": "税込合計 652円・消費税 52円：10%対象 210円（税 21円）、8%対象 390円（税 31円）",
+  "total_excluding_tax": 600,
+  "total_including_tax": 652,
+  "total_tax": 52,
+  "total_tax_if_rounded_per_line": 51
+}

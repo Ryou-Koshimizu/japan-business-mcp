@@ -1,0 +1,9 @@
+{
+  "date": "2026-12-30",
+  "is_business_day": false,
+  "next_business_day": "2027-01-04",
+  "previous_business_day": "2026-12-28",
+  "reason": "会社の休み（毎年 12月30日）",
+  "summary": "2026-12-30（水）は休み：会社の休み（毎年 12月30日）。次の営業日は 2027-01-04",
+  "weekday": "水"
+}
