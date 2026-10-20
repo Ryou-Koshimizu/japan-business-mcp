@@ -14,26 +14,27 @@ async function lastResponse(page, count) {
   return JSON.parse(text);
 }
 
-// 画面の操作で全部の例を実行し、表示された返事がゴールデン（Go の試験と同じ正解）と一致する＝誤答 0
-test("全部の例を画面から実行して、返事が正解と一致する", async ({ page }) => {
-  test.setTimeout(120_000);
-  await page.setViewportSize({ width: 1280, height: 900 });
-  await boot(page);
-  let n = await page.locator("#log .entry.in[data-done]").count();
+// 画面の操作で全部の例を実行し、表示された返事がゴールデン（Go の試験と同じ正解）と一致する＝誤答 0。
+// 1例を1つの試験にする（Linux の WebKit はクリックごとに数秒かかり、24例を1つの試験で流すと時間切れになったため）。
+test.describe("全部の例を画面から実行して、返事が正解と一致する", () => {
   for (const ex of examples) {
-    await page.locator(`.tool-btn[data-tool="${ex.tool}"]`).click();
-    await expect(page.locator("#console-title")).toHaveText(ex.tool);
-    await page.locator(`.chip[data-example="${ex.name}"]`).click();
-    await expect(page.locator(`.chip[data-example="${ex.name}"]`)).toHaveAttribute("aria-pressed", "true");
-    expect(JSON.parse(await page.locator("#args").inputValue())).toEqual(ex.args);
-    await page.locator("#run").click();
-    n++;
-    const res = await lastResponse(page, n);
-    expect(res.result.isError, ex.name).toBeFalsy();
-    expect(res.result.structuredContent, ex.name).toEqual(golden(ex.name));
-    const summary = res.result.structuredContent.summary || res.result.structuredContent.output;
-    if (summary) await expect(page.locator("#summary")).toHaveText(summary);
-    await expect(page.locator("#summary")).not.toHaveClass(/err/);
+    test(`${ex.name}（${ex.label}）`, async ({ page }) => {
+      await page.setViewportSize({ width: 1280, height: 900 });
+      await boot(page);
+      const n = await page.locator("#log .entry.in[data-done]").count();
+      await page.locator(`.tool-btn[data-tool="${ex.tool}"]`).click();
+      await expect(page.locator("#console-title")).toHaveText(ex.tool);
+      await page.locator(`.chip[data-example="${ex.name}"]`).click();
+      await expect(page.locator(`.chip[data-example="${ex.name}"]`)).toHaveAttribute("aria-pressed", "true");
+      expect(JSON.parse(await page.locator("#args").inputValue())).toEqual(ex.args);
+      await page.locator("#run").click();
+      const res = await lastResponse(page, n + 1);
+      expect(res.result.isError, ex.name).toBeFalsy();
+      expect(res.result.structuredContent, ex.name).toEqual(golden(ex.name));
+      const summary = res.result.structuredContent.summary || res.result.structuredContent.output;
+      if (summary) await expect(page.locator("#summary")).toHaveText(summary);
+      await expect(page.locator("#summary")).not.toHaveClass(/err/);
+    });
   }
 });
 
