@@ -43,12 +43,42 @@ type Calendar struct {
 	WorkSunday bool
 	// WorkOnHolidays が true なら祝日・休日も営業日とする（会社の休みと土日だけ見る）。
 	WorkOnHolidays bool
-	// Annual は毎年の会社の休み（年末年始・夏季休暇など）。
-	Annual []MonthDay
+	// annual は毎年の会社の休み（年末年始・夏季休暇など）の集合。AddAnnual で足す。
+	annual [13][32]bool
 	// Closed は特定の日の会社の休み（創立記念日・臨時休業など）。
 	Closed map[jpdate.Date]string
 	// Open は、本来休みでも営業する日（土曜出勤日など）。ほかの設定より優先する。
 	Open map[jpdate.Date]bool
+	// ScanLimit は1回の計算でたどる日数の上限。0 なら DefaultScanLimit。
+	ScanLimit int
+}
+
+// 会社の休み・営業日の指定の上限（範囲を展開した後の日数で数える）。
+const MaxCompanyDays = 2000
+
+// DefaultScanLimit は1回の計算でたどる日数の既定の上限（約60年）。
+const DefaultScanLimit = 366 * 60
+
+// MaxBusinessDays は n営業日後の n の上限（約40年分）。
+const MaxBusinessDays = 10000
+
+// AddAnnual は毎年の会社の休みを足す（同じ月日は1つにまとまる）。
+func (c *Calendar) AddAnnual(md MonthDay) {
+	if md.Month >= 1 && md.Month <= 12 && md.Day >= 1 && md.Day <= 31 {
+		c.annual[md.Month][md.Day] = true
+	}
+}
+
+// IsAnnual はその月日が毎年の会社の休みか。
+func (c *Calendar) IsAnnual(m time.Month, d int) bool {
+	return m >= 1 && m <= 12 && d >= 1 && d <= 31 && c.annual[m][d]
+}
+
+func (c *Calendar) scanLimit() int {
+	if c.ScanLimit > 0 {
+		return c.ScanLimit
+	}
+	return DefaultScanLimit
 }
 
 // DayStatus は1日の判定結果。
@@ -91,11 +121,9 @@ func (c *Calendar) Check(d jpdate.Date) (DayStatus, error) {
 		st.Reason = name
 		return st, nil
 	}
-	for _, md := range c.Annual {
-		if md.Month == d.Month() && md.Day == d.Day() {
-			st.Reason = fmt.Sprintf("会社の休み（毎年 %d月%d日）", md.Month, md.Day)
-			return st, nil
-		}
+	if c.IsAnnual(d.Month(), d.Day()) {
+		st.Reason = fmt.Sprintf("会社の休み（毎年 %d月%d日）", d.Month(), d.Day())
+		return st, nil
 	}
 	switch d.Weekday() {
 	case time.Saturday:
@@ -119,22 +147,20 @@ func (c *Calendar) IsBusinessDay(d jpdate.Date) (bool, error) {
 	return st.Business, err
 }
 
-// 1回の計算で進める上限（設定の誤りで営業日が1日も無いときに止まるため）。
-const maxScanDays = 366 * 30
-
 // AddBusinessDays は d から n 営業日後（n<0 なら前）の日を返す。起点の日は数えない。
 // n=0 のときは、d が営業日なら d、休みなら次の営業日を返す。
 func (c *Calendar) AddBusinessDays(d jpdate.Date, n int) (jpdate.Date, error) {
-	if n < -36500 || n > 36500 {
-		return jpdate.Date{}, fmt.Errorf("営業日数 %d は大きすぎます（±36500 まで）", n)
+	if n < -MaxBusinessDays || n > MaxBusinessDays {
+		return jpdate.Date{}, fmt.Errorf("営業日数 %d は大きすぎます（±%d まで）", n, MaxBusinessDays)
 	}
+	limit := c.scanLimit()
 	step := 1
 	if n < 0 {
 		step = -1
 	}
 	cur := d
 	if n == 0 {
-		for i := 0; i < maxScanDays; i++ {
+		for i := 0; i < limit; i++ {
 			ok, err := c.IsBusinessDay(cur)
 			if err != nil {
 				return jpdate.Date{}, err
@@ -151,8 +177,8 @@ func (c *Calendar) AddBusinessDays(d jpdate.Date, n int) (jpdate.Date, error) {
 	for remain > 0 {
 		cur = cur.AddDays(step)
 		scanned++
-		if scanned > maxScanDays+remain*7 {
-			return jpdate.Date{}, errNoBusinessDay
+		if scanned > limit {
+			return jpdate.Date{}, errScanLimit
 		}
 		ok, err := c.IsBusinessDay(cur)
 		if err != nil {
@@ -165,7 +191,10 @@ func (c *Calendar) AddBusinessDays(d jpdate.Date, n int) (jpdate.Date, error) {
 	return cur, nil
 }
 
-var errNoBusinessDay = fmt.Errorf("営業日が見つかりません（休みの設定を見直してください）")
+var (
+	errNoBusinessDay = fmt.Errorf("営業日が見つかりません（休みの設定を見直してください）")
+	errScanLimit     = fmt.Errorf("たどれる日数の上限を超えました（営業日数を減らすか、休みの設定を見直してください）")
+)
 
 // Shift は休みの日を前後の営業日に寄せる。dir>0 で翌営業日、dir<0 で前営業日、0 はそのまま。
 func (c *Calendar) Shift(d jpdate.Date, dir int) (jpdate.Date, error) {
@@ -173,7 +202,7 @@ func (c *Calendar) Shift(d jpdate.Date, dir int) (jpdate.Date, error) {
 		return d, nil
 	}
 	cur := d
-	for i := 0; i < maxScanDays; i++ {
+	for i := 0; i < c.scanLimit(); i++ {
 		ok, err := c.IsBusinessDay(cur)
 		if err != nil {
 			return jpdate.Date{}, err
@@ -207,8 +236,8 @@ func (c *Calendar) Count(from, to jpdate.Date) (CountResult, error) {
 	if to.Before(from) {
 		return res, fmt.Errorf("終わりの日 %s が始まりの日 %s より前です", to, from)
 	}
-	if from.DaysUntil(to) > 366*100 {
-		return res, fmt.Errorf("期間が長すぎます（100年まで）")
+	if from.DaysUntil(to) >= c.scanLimit() {
+		return res, fmt.Errorf("期間が長すぎます（%d日まで）", c.scanLimit())
 	}
 	for d := from; !d.After(to); d = d.AddDays(1) {
 		res.CalendarDays++
@@ -239,10 +268,5 @@ func (c *Calendar) isCompanyOff(d jpdate.Date) bool {
 	if _, ok := c.Closed[d]; ok {
 		return true
 	}
-	for _, md := range c.Annual {
-		if md.Month == d.Month() && md.Day == d.Day() {
-			return true
-		}
-	}
-	return false
+	return c.IsAnnual(d.Month(), d.Day())
 }

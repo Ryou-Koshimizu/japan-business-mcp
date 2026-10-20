@@ -346,18 +346,25 @@ func compute(y int) []Holiday {
 	return out
 }
 
-// Lookup はその日が祝日・休日なら返す。
+var index sync.Map // int(year) -> map[jpdate.Date]Holiday
+
+// Lookup はその日が祝日・休日なら返す（年ごとの索引で O(1)）。
 func Lookup(d jpdate.Date) (Holiday, bool, error) {
-	hs, err := Year(d.Year())
-	if err != nil {
-		return Holiday{}, false, err
-	}
-	for _, h := range hs {
-		if h.Date.Equal(d) {
-			return h, true, nil
+	y := d.Year()
+	v, ok := index.Load(y)
+	if !ok {
+		hs, err := Year(y)
+		if err != nil {
+			return Holiday{}, false, err
 		}
+		m := make(map[jpdate.Date]Holiday, len(hs))
+		for _, h := range hs {
+			m[h.Date] = h
+		}
+		v, _ = index.LoadOrStore(y, m)
 	}
-	return Holiday{}, false, nil
+	h, found := v.(map[jpdate.Date]Holiday)[d]
+	return h, found, nil
 }
 
 // IsEstimate は、その日付の祝日が「計算式による見込み」かどうか

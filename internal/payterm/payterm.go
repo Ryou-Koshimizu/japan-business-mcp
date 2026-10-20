@@ -97,12 +97,22 @@ func Due(txn jpdate.Date, t Terms, cal *holiday.Calendar) (Result, error) {
 	if cal == nil {
 		cal = &holiday.Calendar{}
 	}
+	// 祝日を計算できる範囲（支払日が翌年にずれる分も含めて）の外の取引日は、月の計算の前に断る。
+	if txn.IsZero() || txn.Year() < holiday.MinYear || txn.Year() > holiday.MaxYear-2 {
+		return Result{}, fmt.Errorf("取引日は %d〜%d年 で指定してください", holiday.MinYear, holiday.MaxYear-2)
+	}
 	closing := dayIn(txn.Year(), txn.Month(), t.ClosingDay)
 	if txn.After(closing) {
-		first := jpdate.MustNew(txn.Year(), txn.Month(), 1).AddMonthsClamp(1)
+		first, err := jpdate.MustNew(txn.Year(), txn.Month(), 1).AddMonthsClamp(1)
+		if err != nil {
+			return Result{}, err
+		}
 		closing = dayIn(first.Year(), first.Month(), t.ClosingDay)
 	}
-	pm := jpdate.MustNew(closing.Year(), closing.Month(), 1).AddMonthsClamp(t.MonthOffset)
+	pm, err := jpdate.MustNew(closing.Year(), closing.Month(), 1).AddMonthsClamp(t.MonthOffset)
+	if err != nil {
+		return Result{}, err
+	}
 	scheduled := dayIn(pm.Year(), pm.Month(), t.PayDay)
 	if scheduled.Before(closing) {
 		return Result{}, fmt.Errorf("支払日（%s）が締め日（%s）より前になります。支払月を見直してください", scheduled, closing)

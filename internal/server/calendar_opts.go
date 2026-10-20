@@ -37,7 +37,11 @@ func LoadCalendarFile(path string) (CalendarOptions, error) {
 	return c, nil
 }
 
+// RequestScanLimit は、道具の引数で会社の休みが渡されたときの、1回の計算でたどる日数の上限（約20年）。
+const RequestScanLimit = 366 * 20
+
 // build は既定（base）に道具の引数（c）を足してカレンダーを作る。
+// 範囲（..）を展開した後の日数で上限（holiday.MaxCompanyDays）を確かめる。
 func (c CalendarOptions) build(base CalendarOptions) (*holiday.Calendar, error) {
 	cal := &holiday.Calendar{
 		WorkSaturday:   base.WorkSaturday || c.WorkSaturday,
@@ -46,67 +50,99 @@ func (c CalendarOptions) build(base CalendarOptions) (*holiday.Calendar, error) 
 		Closed:         map[jpdate.Date]string{},
 		Open:           map[jpdate.Date]bool{},
 	}
-	hol := append(append([]string{}, base.CompanyHolidays...), c.CompanyHolidays...)
-	if len(hol) > 2000 {
-		return nil, fmt.Errorf("会社の休みは2000件までです")
+	if len(c.CompanyHolidays) > 0 || len(c.WorkDays) > 0 {
+		cal.ScanLimit = RequestScanLimit
 	}
-	for _, s := range hol {
-		s = strings.TrimSpace(s)
-		if s == "" {
-			continue
+	b := &calBuilder{cal: cal}
+	for _, s := range append(append([]string{}, base.CompanyHolidays...), c.CompanyHolidays...) {
+		if err := b.addHoliday(strings.TrimSpace(s)); err != nil {
+			return nil, err
 		}
-		if a, b, ok := strings.Cut(s, ".."); ok {
-			if err := addRange(cal, strings.TrimSpace(a), strings.TrimSpace(b)); err != nil {
-				return nil, err
-			}
-			continue
-		}
-		if d, err := jpdate.Parse(s); err == nil {
-			cal.Closed[d] = "会社の休み"
-			continue
-		}
-		md, err := holiday.ParseMonthDay(s)
-		if err != nil {
-			return nil, fmt.Errorf("会社の休み %q を読めません（例: 12-29、2026-08-14、12-29..01-03）", s)
-		}
-		cal.Annual = append(cal.Annual, md)
 	}
 	for _, s := range append(append([]string{}, base.WorkDays...), c.WorkDays...) {
 		d, err := jpdate.Parse(s)
 		if err != nil {
 			return nil, fmt.Errorf("営業する日 %q: %w", s, err)
 		}
+		if err := b.count(); err != nil {
+			return nil, err
+		}
 		cal.Open[d] = true
 	}
 	return cal, nil
 }
 
-func addRange(cal *holiday.Calendar, a, b string) error {
-	if da, err := jpdate.Parse(a); err == nil {
-		db, err := jpdate.Parse(b)
+// calBuilder は展開した日数を数えながらカレンダーに足す。
+type calBuilder struct {
+	cal   *holiday.Calendar
+	added int
+}
+
+func (b *calBuilder) count() error {
+	b.added++
+	if b.added > holiday.MaxCompanyDays {
+		return fmt.Errorf("会社の休み・営業日は、範囲を展開して合わせて%d日までです", holiday.MaxCompanyDays)
+	}
+	return nil
+}
+
+func (b *calBuilder) addHoliday(s string) error {
+	if s == "" {
+		return nil
+	}
+	if from, to, ok := strings.Cut(s, ".."); ok {
+		return b.addRange(strings.TrimSpace(from), strings.TrimSpace(to))
+	}
+	if d, err := jpdate.Parse(s); err == nil {
+		if err := b.count(); err != nil {
+			return err
+		}
+		b.cal.Closed[d] = "会社の休み"
+		return nil
+	}
+	md, err := holiday.ParseMonthDay(s)
+	if err != nil {
+		return fmt.Errorf("会社の休み %q を読めません（例: 12-29、2026-08-14、12-29..01-03）", s)
+	}
+	if err := b.count(); err != nil {
+		return err
+	}
+	b.cal.AddAnnual(md)
+	return nil
+}
+
+func (b *calBuilder) addRange(from, to string) error {
+	if da, err := jpdate.Parse(from); err == nil {
+		db, err := jpdate.Parse(to)
 		if err != nil {
-			return fmt.Errorf("範囲の終わり %q: %w", b, err)
+			return fmt.Errorf("範囲の終わり %q: %w", to, err)
 		}
 		if db.Before(da) || da.DaysUntil(db) > 366 {
-			return fmt.Errorf("範囲 %s..%s は、始まり≦終わり・1年以内で指定してください", a, b)
+			return fmt.Errorf("範囲 %s..%s は、始まり≦終わり・1年以内で指定してください", from, to)
 		}
 		for d := da; !d.After(db); d = d.AddDays(1) {
-			cal.Closed[d] = "会社の休み"
+			if err := b.count(); err != nil {
+				return err
+			}
+			b.cal.Closed[d] = "会社の休み"
 		}
 		return nil
 	}
-	ma, err := holiday.ParseMonthDay(a)
+	ma, err := holiday.ParseMonthDay(from)
 	if err != nil {
 		return err
 	}
-	mb, err := holiday.ParseMonthDay(b)
+	mb, err := holiday.ParseMonthDay(to)
 	if err != nil {
 		return err
 	}
 	// うるう年を含む 2024年の暦で、月日を順にたどる（12-29..01-03 のような年またぎも可）
 	d := jpdate.MustNew(2024, ma.Month, ma.Day)
 	for i := 0; i < 366; i++ {
-		cal.Annual = append(cal.Annual, holiday.MonthDay{Month: d.Month(), Day: d.Day()})
+		if err := b.count(); err != nil {
+			return err
+		}
+		b.cal.AddAnnual(holiday.MonthDay{Month: d.Month(), Day: d.Day()})
 		if d.Month() == mb.Month && d.Day() == mb.Day {
 			return nil
 		}
@@ -115,5 +151,5 @@ func addRange(cal *holiday.Calendar, a, b string) error {
 			d = jpdate.MustNew(2024, 1, 1)
 		}
 	}
-	return fmt.Errorf("範囲 %s..%s を読めません", a, b)
+	return fmt.Errorf("範囲 %s..%s を読めません", from, to)
 }

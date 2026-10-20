@@ -145,20 +145,25 @@ func LastDayOfMonth(y int, m time.Month) int {
 }
 
 // AddMonthsClamp は月を足し、日がその月に無ければ末日に寄せる（1月31日＋1か月→2月28日）。
-func (d Date) AddMonthsClamp(n int) Date {
-	y, m := d.Year(), d.Month()
-	total := int(m) - 1 + n
-	y += total / 12
-	if total%12 < 0 {
-		y--
-		total = total%12 + 12
+// 結果が1〜9999年の外になるときはエラー。
+func (d Date) AddMonthsClamp(n int) (Date, error) {
+	if d.IsZero() {
+		return Date{}, ErrEmpty
 	}
-	nm := time.Month(total%12 + 1)
+	if n < -12*10000 || n > 12*10000 {
+		return Date{}, fmt.Errorf("月数 %d は大きすぎます", n)
+	}
+	total := d.Year()*12 + int(d.Month()) - 1 + n
+	y := total / 12
+	m := time.Month(total%12 + 1)
+	if total < 0 || y < 1 || y > 9999 {
+		return Date{}, fmt.Errorf("%s から %dか月後は扱える範囲（1〜9999年）の外です", d, n)
+	}
 	day := d.Day()
-	if last := LastDayOfMonth(y, nm); day > last {
+	if last := LastDayOfMonth(y, m); day > last {
 		day = last
 	}
-	return MustNew(y, nm, day)
+	return New(y, m, day)
 }
 
 // NthWeekday は y年m月の第n w曜日（n は 1 始まり）。

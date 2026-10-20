@@ -26,16 +26,16 @@ func TestParse(t *testing.T) {
 
 func TestHelpers(t *testing.T) {
 	d := MustNew(2026, time.January, 31)
-	if got := d.AddMonthsClamp(1).String(); got != "2026-02-28" {
+	if got := must(d.AddMonthsClamp(1)).String(); got != "2026-02-28" {
 		t.Error(got)
 	}
-	if got := d.AddMonthsClamp(-2).String(); got != "2025-11-30" {
+	if got := must(d.AddMonthsClamp(-2)).String(); got != "2025-11-30" {
 		t.Error(got)
 	}
-	if got := d.AddMonthsClamp(13).String(); got != "2027-02-28" {
+	if got := must(d.AddMonthsClamp(13)).String(); got != "2027-02-28" {
 		t.Error(got)
 	}
-	if got := d.AddMonthsClamp(-13).String(); got != "2024-12-31" {
+	if got := must(d.AddMonthsClamp(-13)).String(); got != "2024-12-31" {
 		t.Error(got)
 	}
 	if got := NthWeekday(2026, time.January, 2, time.Monday).String(); got != "2026-01-12" {
@@ -54,4 +54,52 @@ func TestHelpers(t *testing.T) {
 	if _, err := New(0, 1, 1); err == nil {
 		t.Error("0年はエラー")
 	}
+}
+
+func must(d Date, err error) Date {
+	if err != nil {
+		panic(err)
+	}
+	return d
+}
+
+// 範囲の外へ出る月の計算は panic せずエラーを返す（セキュリティ指摘の回帰試験）。
+func TestAddMonthsClampOutOfRange(t *testing.T) {
+	for _, c := range []struct {
+		d Date
+		n int
+	}{
+		{MustNew(9999, time.December, 1), 1},
+		{MustNew(1, time.January, 1), -1},
+		{MustNew(2026, time.October, 1), 12 * 10000},
+		{MustNew(2026, time.October, 1), -12 * 10001},
+		{Date{}, 1},
+	} {
+		if _, err := c.d.AddMonthsClamp(c.n); err == nil {
+			t.Errorf("%s %+d はエラーになるはず", c.d, c.n)
+		}
+	}
+	if got := must(MustNew(9999, time.November, 30).AddMonthsClamp(1)); got.String() != "9999-12-30" {
+		t.Error(got)
+	}
+}
+
+func FuzzAddMonthsClamp(f *testing.F) {
+	f.Add(9999, 12, 31, 1)
+	f.Add(1, 1, 1, -1)
+	f.Add(2026, 1, 31, 1)
+	f.Add(2026, 10, 20, -24312)
+	f.Fuzz(func(t *testing.T, y, m, d, n int) {
+		dt, err := New(y, time.Month(m), d)
+		if err != nil {
+			return
+		}
+		r, err := dt.AddMonthsClamp(n)
+		if err != nil {
+			return
+		}
+		if r.Year() < 1 || r.Year() > 9999 || r.Day() > d {
+			t.Fatalf("%s %+d → %s", dt, n, r)
+		}
+	})
 }

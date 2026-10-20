@@ -56,7 +56,9 @@ func TestDue(t *testing.T) {
 }
 
 func TestDueWithCompanyHolidays(t *testing.T) {
-	cal := &holiday.Calendar{Annual: []holiday.MonthDay{{Month: time.December, Day: 30}, {Month: time.December, Day: 31}}}
+	cal := &holiday.Calendar{}
+	cal.AddAnnual(holiday.MonthDay{Month: time.December, Day: 30})
+	cal.AddAnnual(holiday.MonthDay{Month: time.December, Day: 31})
 	r, err := Due(d("2026-11-10"), Terms{31, 1, 31, "previous"}, cal)
 	if err != nil {
 		t.Fatal(err)
@@ -72,4 +74,36 @@ func TestDueErrors(t *testing.T) {
 			t.Errorf("%+v はエラー", tm)
 		}
 	}
+}
+
+// 範囲の外の取引日は panic せずエラー（セキュリティ指摘の回帰試験）。
+func TestDueOutOfRangeNoPanic(t *testing.T) {
+	for _, s := range []string{"9999-12-31", "0001-01-01", "1948-12-31", "2149-12-31"} {
+		if _, err := Due(d(s), Terms{31, 12, 31, "next"}, nil); err == nil {
+			t.Errorf("%s はエラーになるはず", s)
+		}
+	}
+	if _, err := Due(jpdate.Date{}, Terms{31, 1, 31, ""}, nil); err == nil {
+		t.Error("ゼロ値の日付はエラー")
+	}
+}
+
+func FuzzDue(f *testing.F) {
+	f.Add(9999, 12, 31, 31, 12, 31, uint8(1))
+	f.Add(1, 1, 1, 1, 0, 1, uint8(0))
+	f.Add(2026, 10, 20, 31, 1, 31, uint8(2))
+	f.Add(2148, 12, 31, 31, 12, 31, uint8(1))
+	f.Fuzz(func(t *testing.T, y, m, dd, closing, offset, pay int, adj uint8) {
+		txn, err := jpdate.New(y, time.Month(m), dd)
+		if err != nil {
+			return
+		}
+		r, err := Due(txn, Terms{closing, offset, pay, []string{"previous", "next", "none"}[int(adj)%3]}, nil)
+		if err != nil {
+			return
+		}
+		if r.ClosingDate.Before(txn) || r.ScheduledDate.Before(r.ClosingDate) {
+			t.Fatalf("%s: 締め %s 支払予定 %s", txn, r.ClosingDate, r.ScheduledDate)
+		}
+	})
 }

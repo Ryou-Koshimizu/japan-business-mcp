@@ -70,6 +70,16 @@ func addTool[In, Out any](s *mcp.Server, name, title, desc string, h mcp.ToolHan
 		panic(fmt.Sprintf("%s の出力スキーマ: %v", name, err))
 	}
 	f := false
+	// 道具の中で予期しない panic が起きても、サーバーを落とさずエラー応答にする。
+	safe := func(ctx context.Context, req *mcp.CallToolRequest, args In) (res *mcp.CallToolResult, out Out, err error) {
+		defer func() {
+			if r := recover(); r != nil {
+				var zero Out
+				res, out, err = nil, zero, fmt.Errorf("%s の内部エラー: %v", name, r)
+			}
+		}()
+		return h(ctx, req, args)
+	}
 	mcp.AddTool(s, &mcp.Tool{
 		Name:         name,
 		Title:        title,
@@ -82,7 +92,7 @@ func addTool[In, Out any](s *mcp.Server, name, title, desc string, h mcp.ToolHan
 			IdempotentHint: true,
 			OpenWorldHint:  &f,
 		},
-	}, h)
+	}, safe)
 }
 
 // ToolNames は登録する道具の名前（README・遊び場・試験で共有）。

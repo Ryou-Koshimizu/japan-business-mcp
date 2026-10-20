@@ -16,15 +16,15 @@ func d(s string) jpdate.Date {
 }
 
 func newYearOff() *Calendar {
-	var a []MonthDay
+	c := &Calendar{}
 	for _, s := range []string{"12-29", "12-30", "12-31", "01-02", "01-03"} {
 		md, err := ParseMonthDay(s)
 		if err != nil {
 			panic(err)
 		}
-		a = append(a, md)
+		c.AddAnnual(md)
 	}
-	return &Calendar{Annual: a}
+	return c
 }
 
 func TestCheck(t *testing.T) {
@@ -85,14 +85,14 @@ func TestAddBusinessDays(t *testing.T) {
 			t.Errorf("%s %+d: got %s %v want %s", c.from, c.n, got, err, c.want)
 		}
 	}
-	if _, err := cal.AddBusinessDays(d("2026-10-20"), 40000); err == nil {
+	if _, err := cal.AddBusinessDays(d("2026-10-20"), MaxBusinessDays+1); err == nil {
 		t.Error("大きすぎる n はエラー")
 	}
 	allOff := &Calendar{}
 	for m := 1; m <= 12; m++ {
 		for day := 1; day <= 31; day++ {
 			if day <= jpdate.LastDayOfMonth(2024, time.Month(m)) {
-				allOff.Annual = append(allOff.Annual, MonthDay{time.Month(m), day})
+				allOff.AddAnnual(MonthDay{time.Month(m), day})
 			}
 		}
 	}

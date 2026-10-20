@@ -1,7 +1,6 @@
 {
   "results": [
     {
-      "date": "0001-01-01",
       "era": "昭和",
       "era_year": 64,
       "gregorian": "1989年",
@@ -12,7 +11,6 @@
       "year_only": true
     },
     {
-      "date": "0001-01-01",
       "era": "平成",
       "era_year": 1,
       "gregorian": "1989年",

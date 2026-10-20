@@ -28,7 +28,7 @@ type Era struct {
 	Name  string      `json:"name"`
 	Alpha string      `json:"alphabet"`
 	Start jpdate.Date `json:"start"`
-	End   jpdate.Date `json:"end,omitempty"` // 最後の日。令和はゼロ値
+	End   jpdate.Date `json:"end,omitzero"` // 最後の日。令和はゼロ値
 }
 
 // Eras は古い順。
@@ -46,7 +46,7 @@ var SolarStart = jpdate.MustNew(1873, time.January, 1)
 // Result は変換結果。
 type Result struct {
 	Input       string      `json:"input"`
-	Date        jpdate.Date `json:"date,omitempty"`
+	Date        jpdate.Date `json:"date,omitzero"`
 	Gregorian   string      `json:"gregorian"`
 	Era         string      `json:"era"`
 	EraYear     int         `json:"era_year"`
