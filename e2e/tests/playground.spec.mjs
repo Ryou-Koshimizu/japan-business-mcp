@@ -115,7 +115,7 @@ test("動きを減らす設定では、起動の画面と打ち込みを出さ�
   const page = await ctx.newPage();
   await page.goto("/");
   await expect(page.locator("html")).toHaveClass(/booted/);
-  await expect(page.locator("#hero-title")).toHaveText("日本の業務を、AI の道具に。");
+  await expect(page.locator("#hero-title")).toHaveText("祝日・税・和暦をAIが正確に計算。");
   await page.waitForSelector("html[data-mcp=ready]");
   await expect(page.locator("#boot")).toBeHidden();
   await ctx.close();
