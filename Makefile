@@ -1,6 +1,6 @@
 # よく使う作業。全件試験は `make check`。
 GO ?= go
-VERSION ?= dev
+VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
 LDFLAGS := -s -w -X main.version=$(VERSION)
 
 .PHONY: build test race lint fuzz web e2e realworld check clean

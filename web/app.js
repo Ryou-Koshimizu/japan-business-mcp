@@ -113,7 +113,7 @@
       await bootPrint(`  ${(info.compressed / 1048576).toFixed(1)} MB 受信 → ${(info.raw / 1048576).toFixed(1)} MB 展開 ... OK`);
     } catch (e) {
       await bootPrint(`ERROR ${e.message}`);
-      setStatus(`起動できませんでした：${e.message}`, true);
+      setStatus(`起動を止めました：${e.message}`, true);
       finishBoot();
       return;
     }
@@ -227,6 +227,16 @@
     }
   }
 
+  // 道具の名前は「_」のあとでだけ折り返す
+  function breakable(name) {
+    const f = document.createDocumentFragment();
+    name.split("_").forEach((part, i, all) => {
+      f.append(part + (i < all.length - 1 ? "_" : ""));
+      if (i < all.length - 1) f.append(document.createElement("wbr"));
+    });
+    return f;
+  }
+
   // ── 遊び場 ──
   function buildMenu() {
     const menu = $("#tool-menu");
@@ -240,7 +250,7 @@
       b.dataset.tool = t.name;
       b.tabIndex = idx === 0 ? 0 : -1;
       b.innerHTML = `<span class="tool-no">${String(idx + 1).padStart(2, "0")}</span><span class="tool-name"></span><span class="tool-title"></span>`;
-      $(".tool-name", b).textContent = t.name;
+      $(".tool-name", b).append(breakable(t.name));
       $(".tool-title", b).textContent = t.title || "";
       b.addEventListener("click", () => selectTool(t.name, true));
       b.addEventListener("keydown", (e) => {
@@ -398,7 +408,7 @@
       row.setAttribute("role", "listitem");
       row.innerHTML = `<span class="ls-perm">-r-x</span><span class="ls-name"><button type="button" class="ls-try"></button></span><span class="ls-title"></span><span class="ls-desc"></span>`;
       const b = $(".ls-try", row);
-      b.textContent = t.name;
+      b.append(breakable(t.name));
       b.setAttribute("aria-label", `${t.name}（${t.title}）を遊び場で試す`);
       b.addEventListener("click", () => { selectTool(t.name, true); $("#play").scrollIntoView({ behavior: reduced ? "auto" : "smooth" }); });
       $(".ls-title", row).textContent = t.title;
@@ -516,5 +526,5 @@
   }
 
   if (reduced) startHero();
-  start().catch((e) => { setStatus(`起動できませんでした：${e.message}`, true); finishBoot(); });
+  start().catch((e) => { setStatus(`起動を止めました：${e.message}`, true); finishBoot(); });
 })();

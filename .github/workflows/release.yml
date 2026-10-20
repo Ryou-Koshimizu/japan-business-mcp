@@ -1,0 +1,69 @@
+# GoReleaser 相当を GitHub 製のアクションだけで行う：
+# 6種類の実行ファイル → 圧縮 → SHA-256 → 来歴の証明（attestation）→ GitHub Release
+name: Release
+on:
+  push:
+    tags: ['v*']
+permissions: {}
+jobs:
+  build:
+    name: ${{ matrix.goos }}/${{ matrix.goarch }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    strategy:
+      matrix:
+        goos: [linux, darwin, windows]
+        goarch: [amd64, arm64]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+      - name: build
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          VERSION: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          name="japan-business-mcp_${VERSION#v}_${GOOS}_${GOARCH}"
+          ext=""; [ "$GOOS" = windows ] && ext=".exe"
+          mkdir -p "dist/$name"
+          CGO_ENABLED=0 go build -trimpath -ldflags "-s -w -X main.version=${VERSION}" -o "dist/$name/japan-business-mcp$ext" ./cmd/japan-business-mcp
+          cp LICENSE README.md "dist/$name/"
+          cd dist
+          if [ "$GOOS" = windows ]; then zip -qr "$name.zip" "$name"; else tar czf "$name.tar.gz" "$name"; fi
+          rm -rf "$name"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: dist-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: dist/*
+          retention-days: 3
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          path: dist
+          pattern: dist-*
+          merge-multiple: true
+      - run: cd dist && sha256sum * > checksums.txt && cat checksums.txt
+      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: 'dist/*'
+      - name: GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: gh release create "$TAG" dist/* --repo "$GITHUB_REPOSITORY" --title "$TAG" --generate-notes --verify-tag

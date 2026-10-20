@@ -272,3 +272,34 @@ func (s *syncBuf) String() string {
 	defer s.mu.Unlock()
 	return s.b.String()
 }
+
+// 他のサイトからの呼び出し（クロスオリジン）と、localhost への別ホスト名（DNS リバインディング）は断る。
+func TestBinaryHTTPRejectsCrossOriginAndRebinding(t *testing.T) {
+	bin := buildBinary(t)
+	url := startHTTP(t, bin)
+	body := `{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"x","version":"0"}}}`
+	post := func(mod func(*http.Request)) int {
+		req, _ := http.NewRequestWithContext(context.Background(), http.MethodPost, url, strings.NewReader(body))
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Accept", "application/json, text/event-stream")
+		mod(req)
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		_ = resp.Body.Close()
+		return resp.StatusCode
+	}
+	if c := post(func(*http.Request) {}); c != http.StatusOK {
+		t.Fatalf("ふつうの呼び出しが通らない: %d", c)
+	}
+	if c := post(func(r *http.Request) {
+		r.Header.Set("Origin", "https://evil.example")
+		r.Header.Set("Sec-Fetch-Site", "cross-site")
+	}); c != http.StatusForbidden {
+		t.Fatalf("クロスオリジンが通った: %d", c)
+	}
+	if c := post(func(r *http.Request) { r.Host = "evil.example" }); c != http.StatusForbidden {
+		t.Fatalf("別ホスト名（DNS リバインディング）が通った: %d", c)
+	}
+}

@@ -67,7 +67,7 @@ func yearLabel(n int) string {
 // FromDate は西暦の日付を和暦にする。
 func FromDate(d jpdate.Date) (Result, error) {
 	if d.Before(SolarStart) {
-		return Result{}, fmt.Errorf("%s は太陽暦の採用（1873年1月1日）より前のため、日付の変換はできません。年だけなら %d年 で変換できます", d, d.Year())
+		return Result{}, fmt.Errorf("日付の変換は太陽暦を採用した 1873年1月1日 からです（%s）。年だけなら %d年 で変換できます", d, d.Year())
 	}
 	for i := len(Eras) - 1; i >= 0; i-- {
 		e := Eras[i]
