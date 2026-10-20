@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="ja" data-phosphor="amber">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>日本の業務 MCP — 遊び場</title>
+<meta name="description" content="祝日と営業日、インボイス、源泉徴収、和暦、表記ゆれ。Claude や Cursor から呼べる12の道具を Go の MCP サーバーに。ブラウザの中で同じコードを試せます。">
+<meta name="theme-color" content="#0b0703">
+<meta property="og:title" content="日本の業務 MCP">
+<meta property="og:description" content="日本の実務の計算と確認を、AI の道具に。Go 製の MCP サーバーをブラウザで試せる遊び場。">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230b0703'/%3E%3Cpath d='M7 10l6 6-6 6' stroke='%23ffb547' stroke-width='3' fill='none'/%3E%3Crect x='15' y='20' width='10' height='3' fill='%23ffb547'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&family=M+PLUS+1+Code:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<!-- アイコン：lucide-static 1.60.0（ISC）、GitHub は simple-icons 16.35.0（CC0） -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-terminal" viewBox="0 0 24 24"><path d="M12 19h8"/><path d="m4 17 6-6-6-6"/></symbol>
+  <symbol id="i-rotate" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></symbol>
+  <symbol id="i-power" viewBox="0 0 24 24"><path d="M12 2v10"/><path d="M18.4 6.6a9 9 0 1 1-12.77.04"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M12 5v16"/><path d="M16 13h2"/><path d="M16 9h2"/><path d="M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2z"/><path d="M6 13h2"/><path d="M6 9h2"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="m7 7 10 10"/><path d="M17 7v10H7"/></symbol>
+  <symbol id="i-cpu" viewBox="0 0 24 24"><path d="M12 20v2"/><path d="M12 2v2"/><path d="M17 20v2"/><path d="M17 2v2"/><path d="M2 12h2"/><path d="M2 17h2"/><path d="M2 7h2"/><path d="M20 12h2"/><path d="M20 17h2"/><path d="M20 7h2"/><path d="M7 20v2"/><path d="M7 2v2"/><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="8" y="8" width="8" height="8" rx="1"/></symbol>
+  <symbol id="i-github" viewBox="0 0 24 24"><path stroke="none" fill="currentColor" d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></symbol>
+</svg>
+
+<!-- 起動の画面：WebAssembly を読み込む間に出す。読み込みの進み具合は実際のバイト数 -->
+<div class="boot" id="boot" aria-hidden="true">
+  <div class="boot-screen">
+    <pre class="boot-log" id="boot-log"></pre>
+    <div class="boot-bar"><span id="boot-bar-fill"></span></div>
+    <p class="boot-skip">クリックかキーで飛ばせます</p>
+  </div>
+</div>
+
+<div class="crt-overlay" aria-hidden="true"><span class="crt-roll"></span></div>
+
+<a class="skip" href="#play">遊び場へ移動</a>
+
+<header class="site-header" id="top">
+  <a class="brand" href="#hero" aria-label="JBIZ-MCP 日本の業務 MCP（先頭へ）">
+    <span class="brand-mark" aria-hidden="true">&gt;_</span>
+    <span class="brand-name">JBIZ<span class="brand-dim">-MCP</span></span>
+  </a>
+  <nav class="nav" aria-label="ページ内">
+    <a href="#play">遊び場</a>
+    <a href="#tools">道具</a>
+    <a href="#install">導入</a>
+    <a href="#proof">確かめたこと</a>
+  </nav>
+  <div class="header-actions">
+    <button class="phosphor-toggle" id="phosphor-toggle" type="button" aria-pressed="false" aria-label="文字の色を緑に切り替える">
+      <span class="swatch swatch-amber" aria-hidden="true"></span><span class="swatch swatch-green" aria-hidden="true"></span>
+    </button>
+    <a class="icon-link" href="https://github.com/Ryou-Koshimizu/japan-business-mcp" aria-label="GitHub のリポジトリ">
+      <svg class="icon"><use href="#i-github"/></svg>
+    </a>
+  </div>
+</header>
+
+<main>
+  <section class="hero" id="hero" aria-labelledby="hero-title">
+    <div class="hero-grid">
+      <div class="hero-content" id="hero-content">
+        <p class="eyebrow"><span class="led" aria-hidden="true"></span>MCP SERVER · Go · 12 TOOLS</p>
+        <h1 id="hero-title" class="hero-title"><span class="type-line">日本の業務を、</span><span class="type-line">AI の道具に。</span></h1>
+        <p class="lead">祝日と営業日、インボイス、源泉徴収、和暦、表記ゆれ。Claude や Cursor から呼べる12の道具を、ひとつの Go の実行ファイルに。<span class="lead-more">この画面では、同じコードがブラウザの中で動きます。</span></p>
+        <div class="hero-actions">
+          <a class="btn btn-primary magnetic" href="#play"><svg class="icon"><use href="#i-play"/></svg><span>遊び場で試す</span></a>
+          <a class="btn btn-ghost" href="#install"><svg class="icon"><use href="#i-terminal"/></svg><span>導入する</span></a>
+        </div>
+      </div>
+      <figure class="monitor" aria-label="ブラウザの中の MCP サーバーとの実際のやり取り">
+        <div class="monitor-bezel">
+          <div class="monitor-head"><span>LIVE · JSON-RPC</span><span id="monitor-rtt">--</span></div>
+          <dl class="monitor-stats" aria-hidden="true">
+            <div><dt>TRANSPORT</dt><dd>WASM</dd></div>
+            <div><dt>TOOLS</dt><dd id="ms-tools">--</dd></div>
+            <div><dt>CALLS</dt><dd id="ms-calls">0</dd></div>
+            <div><dt>AVG ms</dt><dd id="ms-avg">--</dd></div>
+          </dl>
+          <pre class="monitor-feed" id="monitor-feed" aria-hidden="true"></pre>
+        </div>
+        <figcaption class="sr-only">ページを開くと、ブラウザの中で動く MCP サーバーへ例の呼び出しを送り、その返事を流します。</figcaption>
+      </figure>
+    </div>
+    <a class="scroll-cue" href="#play" aria-label="遊び場へ"><svg class="icon"><use href="#i-arrow"/></svg></a>
+  </section>
+
+  <section class="section play" id="play" aria-labelledby="play-title">
+    <div class="section-head reveal">
+      <p class="kicker">01 / PLAYGROUND</p>
+      <h2 id="play-title">遊び場</h2>
+      <p class="section-lead">道具を選んで「実行」。送った JSON-RPC と、サーバーの返事がそのまま流れます。計算はすべてこのブラウザの中で行い、どこにも送りません。</p>
+    </div>
+    <div class="play-grid reveal">
+      <div class="tool-menu" role="radiogroup" aria-label="道具を選ぶ" id="tool-menu"></div>
+      <div class="console">
+        <div class="console-bar">
+          <span class="console-title" id="console-title">—</span>
+          <span class="status" id="status" role="status" aria-live="polite">起動中…</span>
+        </div>
+        <p class="tool-desc" id="tool-desc"></p>
+        <div class="examples" id="examples" aria-label="例"></div>
+        <label class="args-label" for="args">引数（JSON）</label>
+        <textarea id="args" class="args" spellcheck="false" autocomplete="off" autocapitalize="off" rows="7"></textarea>
+        <div class="console-actions">
+          <button type="button" class="btn btn-primary" id="run" disabled><svg class="icon"><use href="#i-play"/></svg><span>実行</span><kbd>⌘↵</kbd></button>
+          <button type="button" class="btn btn-ghost" id="clear"><svg class="icon"><use href="#i-rotate"/></svg><span>ログを消す</span></button>
+        </div>
+        <div class="summary" id="summary" aria-live="polite" hidden></div>
+        <div class="log" id="log" tabindex="0" role="log" aria-label="送受信のログ"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section tools" id="tools" aria-labelledby="tools-title">
+    <div class="section-head reveal">
+      <p class="kicker">02 / TOOLS</p>
+      <h2 id="tools-title">道具</h2>
+      <p class="section-lead">下の一覧は、いまブラウザの中のサーバーに <code>tools/list</code> を送って返ってきた中身です。</p>
+    </div>
+    <div class="ls reveal" id="ls" role="list"></div>
+    <div class="extras reveal">
+      <div>
+        <h3>資料（resources）</h3>
+        <ul class="plain" id="resources"></ul>
+      </div>
+      <div>
+        <h3>依頼文（prompts）</h3>
+        <ul class="plain" id="prompts"></ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section install" id="install" aria-labelledby="install-title">
+    <div class="section-head reveal">
+      <p class="kicker">03 / INSTALL</p>
+      <h2 id="install-title">導入</h2>
+      <p class="section-lead">実行ファイルを置いて、使っているアプリの設定に1か所書き足すだけです。外部の API の鍵は要りません。</p>
+    </div>
+    <div class="install-steps reveal">
+      <div class="step">
+        <span class="step-no">1</span>
+        <div>
+          <h3>実行ファイルを入れる</h3>
+          <div class="code"><pre><code id="code-install">go install github.com/Ryou-Koshimizu/japan-business-mcp/cmd/japan-business-mcp@latest</code></pre><button class="copy" type="button" data-copy="code-install" aria-label="コマンドを写す"><svg class="icon"><use href="#i-copy"/></svg></button></div>
+          <p class="note">GitHub の Releases に macOS・Linux・Windows 向けの実行ファイルも置いています。</p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-no">2</span>
+        <div>
+          <h3>アプリに登録する</h3>
+          <div class="tabs" role="tablist" aria-label="アプリ">
+            <button role="tab" type="button" id="tab-desktop" aria-selected="true" aria-controls="panel-desktop">Claude Desktop</button>
+            <button role="tab" type="button" id="tab-code" aria-selected="false" aria-controls="panel-code" tabindex="-1">Claude Code</button>
+            <button role="tab" type="button" id="tab-cursor" aria-selected="false" aria-controls="panel-cursor" tabindex="-1">Cursor</button>
+            <button role="tab" type="button" id="tab-http" aria-selected="false" aria-controls="panel-http" tabindex="-1">HTTP</button>
+          </div>
+          <div class="tab-panel" id="panel-desktop" role="tabpanel" aria-labelledby="tab-desktop">
+            <p class="note">claude_desktop_config.json に足します。</p>
+            <div class="code"><pre><code id="code-desktop">{
+  "mcpServers": {
+    "japan-business": {
+      "command": "japan-business-mcp"
+    }
+  }
+}</code></pre><button class="copy" type="button" data-copy="code-desktop" aria-label="設定を写す"><svg class="icon"><use href="#i-copy"/></svg></button></div>
+          </div>
+          <div class="tab-panel" id="panel-code" role="tabpanel" aria-labelledby="tab-code" hidden>
+            <p class="note">ターミナルで1行。</p>
+            <div class="code"><pre><code id="code-code">claude mcp add japan-business -- japan-business-mcp</code></pre><button class="copy" type="button" data-copy="code-code" aria-label="コマンドを写す"><svg class="icon"><use href="#i-copy"/></svg></button></div>
+          </div>
+          <div class="tab-panel" id="panel-cursor" role="tabpanel" aria-labelledby="tab-cursor" hidden>
+            <p class="note">.cursor/mcp.json（プロジェクト）か ~/.cursor/mcp.json に足します。</p>
+            <div class="code"><pre><code id="code-cursor">{
+  "mcpServers": {
+    "japan-business": {
+      "command": "japan-business-mcp",
+      "args": ["-calendar", "company-calendar.json"]
+    }
+  }
+}</code></pre><button class="copy" type="button" data-copy="code-cursor" aria-label="設定を写す"><svg class="icon"><use href="#i-copy"/></svg></button></div>
+          </div>
+          <div class="tab-panel" id="panel-http" role="tabpanel" aria-labelledby="tab-http" hidden>
+            <p class="note">Streamable HTTP で待ち受けます。外に出すときは JBIZ_HTTP_TOKEN で鍵を掛けます。</p>
+            <div class="code"><pre><code id="code-http">JBIZ_HTTP_TOKEN=change-me japan-business-mcp -http 127.0.0.1:8105
+# → http://127.0.0.1:8105/mcp</code></pre><button class="copy" type="button" data-copy="code-http" aria-label="コマンドを写す"><svg class="icon"><use href="#i-copy"/></svg></button></div>
+          </div>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-no">3</span>
+        <div>
+          <h3>話しかける</h3>
+          <p class="quote">「来月の支払予定を、月末締め翌月末払い・休みなら前営業日で出して」</p>
+          <p class="quote">「この請求書、インボイスとして足りないところはある？」</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section proof" id="proof" aria-labelledby="proof-title">
+    <div class="section-head reveal">
+      <p class="kicker">04 / VERIFIED</p>
+      <h2 id="proof-title">確かめたこと</h2>
+      <p class="section-lead">正解の表を書き写すのではなく、公的な実データと突き合わせています。</p>
+    </div>
+    <div class="stats reveal" id="stats"></div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <p><span class="brand-mark" aria-hidden="true">&gt;_</span> japan-business-mcp · MIT License · <a href="https://github.com/Ryou-Koshimizu/japan-business-mcp">GitHub</a></p>
+  <p class="fine">祝日の照合：内閣府「国民の祝日について」の CSV。番号の照合：国税庁 法人番号公表サイト・適格請求書発行事業者公表サイトの公開データ。</p>
+</footer>
+
+<noscript><p class="noscript">遊び場は JavaScript と WebAssembly で動きます。</p></noscript>
+<script src="wasm_exec.js"></script>
+<script src="stats.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

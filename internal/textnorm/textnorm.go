@@ -222,9 +222,13 @@ var (
 	reChome  = regexp.MustCompile(`(\d+)丁目\s*(\d)`)
 	reBanchi = regexp.MustCompile(`(\d+)番地?(?:の|ノ)?\s*(\d)`)
 	reBanEnd = regexp.MustCompile(`(\d+)番地?$`)
-	reGo     = regexp.MustCompile(`(\d+)号([^室線館棟車機0-9]|$)`)
-	reGoNum  = regexp.MustCompile(`(\d+)号(\d)`)
-	rePostal = regexp.MustCompile(`^(?:〒\s*(\d{3})-?(\d{4})|(\d{3})-(\d{4}))(\D.*)?$`)
+	// 「3000番地（市役所内）」「12番地 ○○ビル」：番地のあとに数字が続かないときは「番地」を外す
+	reBanchiTail = regexp.MustCompile(`(\d+)番地([^0-9のノ]|$)`)
+	// 「117番地Ａ－22」のように英字の部屋番号が続くときは、つながらないよう空白で区切る
+	reUnitAlpha = regexp.MustCompile(`(\d+)(?:番地|号)([A-Za-z])`)
+	reGo        = regexp.MustCompile(`(\d+)号([^室線館棟車機0-9]|$)`)
+	reGoNum     = regexp.MustCompile(`(\d+)号(\d)`)
+	rePostal    = regexp.MustCompile(`^(?:〒\s*(\d{3})-?(\d{4})|(\d{3})-(\d{4}))(\D.*)?$`)
 )
 
 func addressHyphens(s string) string {
@@ -232,6 +236,8 @@ func addressHyphens(s string) string {
 		n := reChome.ReplaceAllString(s, "$1-$2")
 		n = reBanchi.ReplaceAllString(n, "$1-$2")
 		n = reBanEnd.ReplaceAllString(n, "$1")
+		n = reUnitAlpha.ReplaceAllString(n, "$1 $2")
+		n = reBanchiTail.ReplaceAllString(n, "$1$2")
 		n = reGo.ReplaceAllString(n, "$1$2")
 		// 「10号 301号室」の「号」を消すと数字がつながるので、空白で区切る
 		n = reGoNum.ReplaceAllString(n, "$1 $2")

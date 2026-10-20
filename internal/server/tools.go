@@ -69,6 +69,7 @@ type HolidaysListOut struct {
 	Holidays   []HolidayRow `json:"holidays"`
 	IsEstimate bool         `json:"is_estimate"`
 	Note       string       `json:"note"`
+	Summary    string       `json:"summary"`
 }
 
 func (s *srv) holidaysList(_ context.Context, _ *mcp.CallToolRequest, in HolidaysListIn) (*mcp.CallToolResult, HolidaysListOut, error) {
@@ -119,6 +120,18 @@ func (s *srv) holidaysList(_ context.Context, _ *mcp.CallToolRequest, in Holiday
 		}
 	}
 	out.Count = len(out.Holidays)
+	names := make([]string, 0, 4)
+	for i, h := range out.Holidays {
+		if i == 3 {
+			names = append(names, "…")
+			break
+		}
+		names = append(names, fmt.Sprintf("%d/%d %s", h.Date.Month(), h.Date.Day(), h.Name))
+	}
+	out.Summary = fmt.Sprintf("%s〜%s の祝日・休日は %d日", from, to, out.Count)
+	if len(names) > 0 {
+		out.Summary += "（" + strings.Join(names, "、") + "）"
+	}
 	out.Note = "国民の祝日に関する法律と特例法の規則から計算（1955〜2027年は内閣府の公表データと全日一致を確認済み）"
 	if out.IsEstimate {
 		out.Note += fmt.Sprintf("。%d年より後の春分の日・秋分の日は、前年2月の官報公表で確定する日付を計算式で求めた見込み", holiday.LastGazettedYear)

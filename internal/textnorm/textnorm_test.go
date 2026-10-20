@@ -32,8 +32,12 @@ func TestNormalizeTable(t *testing.T) {
 		{"住所 郵便番号ハイフン無し", "〒1000001東京都", Options{Mode: Address}, "〒100-0001 東京都"},
 		{"住所 二十三番地", "京都市中京区二十三番地", Options{Mode: Address}, "京都市中京区23"},
 		{"住所 丁目のみ", "東京都新宿区四谷三丁目", Options{Mode: Address}, "東京都新宿区四谷3丁目"},
-		{"住所 英字建物", "港区六本木６丁目１０番１号 Roppongi Hills", Options{Mode: Address}, "港区六本木6-10-1Roppongi Hills"},
+		{"住所 英字建物", "港区六本木６丁目１０番１号 Roppongi Hills", Options{Mode: Address}, "港区六本木6-10-1 Roppongi Hills"},
 		{"国道は変えない", "国道一号線", Options{Mode: Address}, "国道一号線"},
+		{"番地のあとに括弧", "上道町３０００番地（境港市役所内）", Options{Mode: Address}, "上道町3000(境港市役所内)"},
+		{"番地のあとに英字の部屋番号", "倉吉市昭和町２丁目１１７番地Ａ－２２", Options{Mode: Address}, "倉吉市昭和町2-117 A-22"},
+		{"号のあとに部屋番号", "米子市皆生温泉２丁目８番２号１０２号", Options{Mode: Address}, "米子市皆生温泉2-8-2 102"},
+		{"番館は変えない", "本町５番館", Options{Mode: Address}, "本町5番館"},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {

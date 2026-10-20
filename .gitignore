@@ -6,8 +6,12 @@
 .env.*
 node_modules/
 /web/main.wasm
+/web/main.wasm.gz
 /web/wasm_exec.js
 /test-results/
 /playwright-report/
 /e2e/.artifacts/
 .DS_Store
+.cache/
+/e2e/test-results/
+/e2e/playwright-report/

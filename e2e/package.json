@@ -1,0 +1,12 @@
+{
+  "name": "japan-business-mcp-e2e",
+  "private": true,
+  "description": "遊び場（web/）の実ブラウザ試験：Chromium と WebKit、25の画面の大きさ、axe",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
+    "@playwright/test": "1.64.1"
+  }
+}

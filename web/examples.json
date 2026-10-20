@@ -1,0 +1,311 @@
+[
+  {
+    "name": "holidays_2026",
+    "tool": "holidays_list",
+    "label": "2026年の祝日",
+    "args": {
+      "year": 2026
+    }
+  },
+  {
+    "name": "holidays_2019_range",
+    "tool": "holidays_list",
+    "label": "2019年の10連休",
+    "args": {
+      "from": "2019-04-27",
+      "to": "2019-05-06"
+    }
+  },
+  {
+    "name": "holidays_2030_estimate",
+    "tool": "holidays_list",
+    "label": "2030年3月（見込み）",
+    "args": {
+      "from": "2030-03-01",
+      "to": "2030-03-31"
+    }
+  },
+  {
+    "name": "check_silver_week",
+    "tool": "business_day_check",
+    "label": "2026-09-22 は？",
+    "args": {
+      "date": "2026-09-22"
+    }
+  },
+  {
+    "name": "check_company_closed",
+    "tool": "business_day_check",
+    "label": "年末の会社休み",
+    "args": {
+      "calendar": {
+        "company_holidays": [
+          "12-29..01-03"
+        ]
+      },
+      "date": "2026-12-30"
+    }
+  },
+  {
+    "name": "add_new_year",
+    "tool": "business_day_add",
+    "label": "年末から1営業日後",
+    "args": {
+      "calendar": {
+        "company_holidays": [
+          "12-29..01-03"
+        ]
+      },
+      "date": "2026-12-28",
+      "days": 1
+    }
+  },
+  {
+    "name": "add_back_gw",
+    "tool": "business_day_add",
+    "label": "連休明けから3営業日前",
+    "args": {
+      "date": "2026-05-07",
+      "days": -3
+    }
+  },
+  {
+    "name": "count_october",
+    "tool": "business_day_count",
+    "label": "2026年10月の営業日数",
+    "args": {
+      "from": "2026-10-01",
+      "to": "2026-10-31"
+    }
+  },
+  {
+    "name": "due_eom_next_eom",
+    "tool": "payment_due_date",
+    "label": "月末締め翌月末払い",
+    "args": {
+      "closing_day": 31,
+      "month_offset": 1,
+      "pay_day": 31,
+      "transaction_date": "2026-01-15"
+    }
+  },
+  {
+    "name": "due_gw_next",
+    "tool": "payment_due_date",
+    "label": "支払日が連休中",
+    "args": {
+      "closing_day": 31,
+      "holiday_adjust": "next",
+      "month_offset": 2,
+      "pay_day": 5,
+      "transaction_date": "2026-03-10"
+    }
+  },
+  {
+    "name": "numbers_mixed",
+    "tool": "registration_number_validate",
+    "label": "4件をまとめて",
+    "args": {
+      "numbers": [
+        "T7000012050002",
+        "７０００－０１２０－５０００２",
+        "T7000012050003",
+        "T12345"
+      ]
+    }
+  },
+  {
+    "name": "tax_once_per_rate",
+    "tool": "consumption_tax_calculate",
+    "label": "税率ごとに1回の端数処理",
+    "args": {
+      "lines": [
+        {
+          "amount": 105,
+          "description": "部品A",
+          "rate": 10
+        },
+        {
+          "amount": 105,
+          "description": "部品B",
+          "rate": 10
+        },
+        {
+          "description": "お茶",
+          "quantity": 3,
+          "rate": 8,
+          "unit_price": 130
+        }
+      ]
+    }
+  },
+  {
+    "name": "tax_inclusive_round",
+    "tool": "consumption_tax_calculate",
+    "label": "税込999円・四捨五入",
+    "args": {
+      "lines": [
+        {
+          "amount": 999,
+          "rate": 10
+        }
+      ],
+      "price_mode": "inclusive",
+      "rounding": "round"
+    }
+  },
+  {
+    "name": "invoice_ok",
+    "tool": "qualified_invoice_check",
+    "label": "そろっている請求書",
+    "args": {
+      "issuer_name": "株式会社サンプル商事",
+      "items": [
+        {
+          "amount": 210,
+          "description": "事務用品",
+          "rate": 10
+        },
+        {
+          "amount": 390,
+          "description": "お茶",
+          "rate": 8,
+          "reduced_mark": true
+        }
+      ],
+      "rate_totals": [
+        {
+          "rate": 10,
+          "tax": 21,
+          "total": 210
+        },
+        {
+          "rate": 8,
+          "tax": 31,
+          "total": 390
+        }
+      ],
+      "recipient_name": "株式会社取引先",
+      "registration_number": "T7000012050002",
+      "transaction_date": "2026-10-20"
+    }
+  },
+  {
+    "name": "invoice_problems",
+    "tool": "qualified_invoice_check",
+    "label": "不足のある請求書",
+    "args": {
+      "issuer_name": "株式会社サンプル商事",
+      "items": [
+        {
+          "amount": 105,
+          "description": "部品A",
+          "rate": 10
+        },
+        {
+          "amount": 105,
+          "description": "部品B",
+          "rate": 10
+        },
+        {
+          "amount": 390,
+          "description": "お茶",
+          "rate": 8
+        }
+      ],
+      "rate_totals": [
+        {
+          "rate": 10,
+          "tax": 20,
+          "total": 210
+        },
+        {
+          "rate": 8,
+          "tax": 31,
+          "total": 390
+        }
+      ],
+      "registration_number": "7000012050002",
+      "transaction_date": "2026-10-20"
+    }
+  },
+  {
+    "name": "withholding_300k",
+    "tool": "withholding_tax_calculate",
+    "label": "報酬30万円＋消費税",
+    "args": {
+      "amount": 300000,
+      "consumption_tax": 30000,
+      "payment_date": "2026-10-31"
+    }
+  },
+  {
+    "name": "withholding_over_1m",
+    "tool": "withholding_tax_calculate",
+    "label": "報酬150万円",
+    "args": {
+      "amount": 1500000,
+      "payment_date": "2026-10-31"
+    }
+  },
+  {
+    "name": "withholding_reverse",
+    "tool": "withholding_tax_calculate",
+    "label": "手取り10万円から逆算",
+    "args": {
+      "net_target": 100000,
+      "payment_date": "2026-10-31"
+    }
+  },
+  {
+    "name": "stamp_tax_stated",
+    "tool": "revenue_stamp_receipt",
+    "label": "税込5.5万円・税額を区分",
+    "args": {
+      "amount": 55000,
+      "consumption_tax": 5000
+    }
+  },
+  {
+    "name": "stamp_3m",
+    "tool": "revenue_stamp_receipt",
+    "label": "300万円の領収書",
+    "args": {
+      "amount": 3000000
+    }
+  },
+  {
+    "name": "wareki_reiwa_kanji",
+    "tool": "wareki_convert",
+    "label": "令和八年十月二十日",
+    "args": {
+      "input": "令和八年十月二十日"
+    }
+  },
+  {
+    "name": "wareki_year_1989",
+    "tool": "wareki_convert",
+    "label": "1989年（改元の年）",
+    "args": {
+      "input": "1989"
+    }
+  },
+  {
+    "name": "normalize_address",
+    "tool": "text_normalize",
+    "label": "住所の表記ゆれ",
+    "args": {
+      "mode": "address",
+      "text": "〒１００ー０００１　東京都千代田区千代田１丁目１番１号"
+    }
+  },
+  {
+    "name": "normalize_katakana",
+    "tool": "text_normalize",
+    "label": "半角カナ＋ひらがな",
+    "args": {
+      "kana": "katakana",
+      "text": "ｶﾌﾞｼｷｶﾞｲｼｬ　さんぷる"
+    }
+  }
+]

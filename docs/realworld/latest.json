@@ -1,0 +1,102 @@
+{
+  "when": "2026-10-20T20:41:09+09:00",
+  "binary": "bin/japan-business-mcp",
+  "server_version": "dev",
+  "data_sha256": {
+    "cao_syukujitsu.csv": "cec37a743c96995cdb9cb52b685c9003634682a9b0e1a640a6b9b96881fe964a",
+    "houjin_tottori.zip": "e618371ae37f78e5cfb1719bc02709e2c621a46cab4fe06edc5abdd03a760d46",
+    "invoice_kojin.zip": "2c191f41afaa5593180c4404476d1adf702990d1b08f8756264396eeaf7bb61a",
+    "invoice_shadan.zip": "3ae69f1133ce7ae55b7d4f8db2e3ae493fb7450fcd25cffc0f527b023a4bbfa9"
+  },
+  "data_sources": {
+    "cao_syukujitsu.csv": "https://www8.cao.go.jp/chosei/shukujitsu/syukujitsu.csv",
+    "houjin_tottori.zip": "https://www.houjin-bangou.nta.go.jp/download/zenken/index.html（鳥取県 CSV）",
+    "invoice_kojin.zip": "https://www.invoice-kohyo.nta.go.jp/download/zenken/dlfile?dlFilKanriNo=5180\u0026jinkakukbn=1\u0026type=01",
+    "invoice_shadan.zip": "https://www.invoice-kohyo.nta.go.jp/download/zenken/dlfile?dlFilKanriNo=5177\u0026jinkakukbn=3\u0026type=01"
+  },
+  "transports": [
+    {
+      "transport": "stdio",
+      "checks": [
+        {
+          "name": "祝日（内閣府 CSV と1日ずつ）",
+          "cases": 1067,
+          "failures": 0
+        },
+        {
+          "name": "営業日の判定（2025〜2027年の全日）",
+          "cases": 1095,
+          "failures": 0
+        },
+        {
+          "name": "公開データの登録番号・法人番号（誤検出）",
+          "cases": 331285,
+          "failures": 0
+        },
+        {
+          "name": "1桁を変えた番号（見逃し）",
+          "cases": 331285,
+          "failures": 0
+        },
+        {
+          "name": "法人の所在地の正規化（鳥取県の全法人）",
+          "cases": 20258,
+          "failures": 0
+        },
+        {
+          "name": "和暦⇔西暦の往復（1873〜2150年・7日おき）",
+          "cases": 14506,
+          "failures": 0
+        }
+      ],
+      "tool_calls": 71360,
+      "seconds": 147.230657083
+    },
+    {
+      "transport": "streamable-http",
+      "checks": [
+        {
+          "name": "祝日（内閣府 CSV と1日ずつ）",
+          "cases": 1067,
+          "failures": 0
+        },
+        {
+          "name": "営業日の判定（2025〜2027年の全日）",
+          "cases": 1095,
+          "failures": 0
+        },
+        {
+          "name": "公開データの登録番号・法人番号（誤検出）",
+          "cases": 331285,
+          "failures": 0
+        },
+        {
+          "name": "1桁を変えた番号（見逃し）",
+          "cases": 331285,
+          "failures": 0
+        },
+        {
+          "name": "法人の所在地の正規化（鳥取県の全法人）",
+          "cases": 20258,
+          "failures": 0
+        },
+        {
+          "name": "和暦⇔西暦の往復（1873〜2150年・7日おき）",
+          "cases": 14506,
+          "failures": 0
+        }
+      ],
+      "tool_calls": 71360,
+      "seconds": 40.488006125
+    }
+  ],
+  "total_failures": 0,
+  "totals": {
+    "1桁を変えた番号（見逃し）": 331285,
+    "公開データの登録番号・法人番号（誤検出）": 331285,
+    "和暦⇔西暦の往復（1873〜2150年・7日おき）": 14506,
+    "営業日の判定（2025〜2027年の全日）": 1095,
+    "法人の所在地の正規化（鳥取県の全法人）": 20258,
+    "祝日（内閣府 CSV と1日ずつ）": 1067
+  }
+}

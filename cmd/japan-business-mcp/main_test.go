@@ -97,7 +97,11 @@ func TestBinaryStdio(t *testing.T) {
 // startHTTP は実行ファイルを HTTP で起動し、待ち受けの URL を返す。
 func startHTTP(t *testing.T, bin string, env ...string) string {
 	t.Helper()
-	cmd := exec.CommandContext(context.Background(), bin, "-http", "127.0.0.1:0")
+	addr := os.Getenv("JBIZ_TEST_HTTP_ADDR") // 決まったポートで試すとき（例 127.0.0.1:8105）
+	if addr == "" {
+		addr = "127.0.0.1:0"
+	}
+	cmd := exec.CommandContext(context.Background(), bin, "-http", addr)
 	cmd.Env = append(os.Environ(), env...)
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
