@@ -170,7 +170,7 @@ func run(bin, cache, out, statsPath, port string) error {
 		return err
 	}
 	if statsPath != "" && rep.Failures == 0 {
-		if err := writeStats(statsPath, rep, data); err != nil {
+		if err := writeStats(statsPath, rep); err != nil {
 			return err
 		}
 	}
@@ -637,7 +637,7 @@ func atoi(s string) int {
 
 // ───── 遊び場に出す数字 ─────
 
-func writeStats(path string, rep *report, d *dataset) error {
+func writeStats(path string, rep *report) error {
 	tot := rep.Totals
 	type stat struct {
 		Value int    `json:"value"`

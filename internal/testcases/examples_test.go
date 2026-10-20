@@ -25,7 +25,7 @@ func TestWebExamplesUpToDate(t *testing.T) {
 		if c.Label == "" {
 			t.Fatalf("%s に表示名が無い", c.Name)
 		}
-		list = append(list, ex{c.Name, c.Tool, c.Label, c.Args})
+		list = append(list, ex(c))
 	}
 	b, err := json.MarshalIndent(list, "", "  ")
 	if err != nil {

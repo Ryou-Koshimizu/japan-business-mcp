@@ -1,7 +1,7 @@
 {
-  "when": "2026-10-20T20:41:09+09:00",
+  "when": "2026-10-20T21:15:55+09:00",
   "binary": "bin/japan-business-mcp",
-  "server_version": "dev",
+  "server_version": "e703d6f-dirty",
   "data_sha256": {
     "cao_syukujitsu.csv": "cec37a743c96995cdb9cb52b685c9003634682a9b0e1a640a6b9b96881fe964a",
     "houjin_tottori.zip": "e618371ae37f78e5cfb1719bc02709e2c621a46cab4fe06edc5abdd03a760d46",
@@ -50,7 +50,7 @@
         }
       ],
       "tool_calls": 71360,
-      "seconds": 147.230657083
+      "seconds": 87.881219625
     },
     {
       "transport": "streamable-http",
@@ -87,7 +87,7 @@
         }
       ],
       "tool_calls": 71360,
-      "seconds": 40.488006125
+      "seconds": 27.8445365
     }
   ],
   "total_failures": 0,

@@ -101,7 +101,7 @@ func startHTTP(t *testing.T, bin string, env ...string) string {
 	if addr == "" {
 		addr = "127.0.0.1:0"
 	}
-	cmd := exec.CommandContext(context.Background(), bin, "-http", addr)
+	cmd := exec.CommandContext(context.Background(), bin, "-http", addr) // #nosec G702 -- 試験で作った実行ファイルと、試験の環境変数のアドレス
 	cmd.Env = append(os.Environ(), env...)
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
